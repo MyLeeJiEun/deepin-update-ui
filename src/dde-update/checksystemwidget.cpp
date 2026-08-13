@@ -379,7 +379,7 @@ void CheckSystemWidget::initConnections()
             auto mainLayout = dynamic_cast<QVBoxLayout*>(layout());
             if (mainLayout)
                 mainLayout->addWidget(errorFrame);
-        } else if (UpdateModel::CheckSuccess == status) {
+        } else if (UpdateModel::CheckSuccess == status || UpdateModel::CheckEnd == status) {
             m_checkProgressWidget->setVisible(false);
             auto successFrame = new SuccessFrame(this);
             auto mainLayout = dynamic_cast<QVBoxLayout*>(layout());

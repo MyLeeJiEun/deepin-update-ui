@@ -308,6 +308,14 @@ void UpdateWorker::onCheckSystemStatusChanged(const QString &status)
         qCInfo(logUpdateModal) << "Check system stage:" << stage << ", update status:" << updateStatus;
         if (UpdateModel::CSS_AfterLogin == stage && updateStatus == UpdateModel::CheckEnd) {
             cleanLaStoreJob(m_checkSystemJob);
+            // 检查任务可能只收到 "end" 状态（job 在订阅前已完成，succeed 信号已错过），
+            // 此时也必须更新状态，否则界面会一直停留在进度页（气泡球卡在 99%）。
+            // 已收到过 "succeed"（CheckSuccess）时不重复推进，避免成功页叠加；
+            // 已收到过 "failed"（CheckFailed）时也不推进，避免失败页上叠加成功页（end 可从 failed 跳转而来）。
+            const auto checkStatus = UpdateModel::instance()->checkStatus();
+            if (checkStatus != UpdateModel::CheckSuccess && checkStatus != UpdateModel::CheckFailed) {
+                UpdateModel::instance()->setCheckStatus(updateStatus);
+            }
         } else {
             if (updateStatus == UpdateModel::CheckFailed && m_checkSystemJob) {
                 UpdateModel::instance()->setLastErrorLog(m_checkSystemJob->description());
